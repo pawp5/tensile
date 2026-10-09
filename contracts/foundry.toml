@@ -14,8 +14,12 @@ remappings = [
   "morpho-blue/=lib/morpho-blue/src/",
   "morpho-blue-irm/=lib/morpho-blue-irm/src/",
   "forge-std/=lib/forge-std/src/",
+  "ds-test/=lib/forge-std/lib/ds-test/src/",
 ]
 
 [rpc_endpoints]
 monad_testnet = "${MONAD_TESTNET_RPC_URL}"
-monad = "${MONAD_RPC_URL}"
+monad = "${MONAD_MAINNET_RPC_URL}"
+ethereum = "${ETHEREUM_RPC_URL}"
+tempo_testnet = "${TEMPO_TESTNET_RPC_URL}"
+tempo = "${TEMPO_RPC_URL}"

@@ -87,8 +87,8 @@ contract DemoFlow is TensileDeployer {
     function _deployAll() internal {
         vm.startPrank(admin);
         usdc = new MockUSDC();
-        morpho = IMorpho(deployCode("Morpho.sol:Morpho", abi.encode(admin)));
-        address irm = deployCode("AdaptiveCurveIrm.sol:AdaptiveCurveIrm", abi.encode(address(morpho)));
+        morpho = IMorpho(deployCode("out/Morpho.sol/Morpho.json", abi.encode(admin)));
+        address irm = deployCode("out/AdaptiveCurveIrm.sol/AdaptiveCurveIrm.json", abi.encode(address(morpho)));
         morpho.enableIrm(irm);
         morpho.enableLltv(LLTV);
         _deployTensile(
