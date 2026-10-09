@@ -83,19 +83,27 @@ ALL FLOWS PASSED
 ### Deploy
 
 ```bash
-cp .env.example .env    # fill PRIVATE_KEY etc.
-source .env
+cp .env.example .env     # fill PRIVATE_KEY, EXPECTED_CHAIN_ID, and chain-specific addresses
 
-# Monad testnet: leave USDC and MORPHO empty -> deploys MockUSDC + our own Morpho Blue/IRM
-forge script script/Deploy.s.sol --rpc-url monad_testnet --broadcast
+# Monad testnet (example): explicitly opt in to test assets and a self-deployed Morpho
+DEPLOY_MOCK_USDC=true DEPLOY_LOCAL_MORPHO=true forge script script/Deploy.s.sol --rpc-url monad_testnet --broadcast
 # writes deployments/<chainId>.json
 
 # Onboard a warehouse + material class (reserve feed, price feed, Morpho oracle, class config)
 forge script script/Onboard.s.sol --rpc-url monad_testnet --broadcast
 ```
 
-On **Monad mainnet**, set `USDC`, `MORPHO` and `IRM` to the official addresses and confirm `isLltvEnabled(LLTV)` first.
-Both scripts were broadcast end-to-end against a local Anvil node.
+For production, set `USDC`, `MORPHO`, `IRM`, and `EXPECTED_CHAIN_ID` explicitly. `USDC` decimals are queried
+from the token contract; `USDC_DECIMALS` can be set as an extra assertion. The deploy script rejects a missing
+production stablecoin, checks that Morpho and the IRM have code, and checks that the IRM and LLTV are enabled.
+Configure `STABLE_FEED` and `STABLE_FLOOR` where a suitable stablecoin/USD feed exists. Never enable the mock
+token on production. Onboarding requires the deployment signer's admin rights; it grants that signer RISK_ADMIN
+if needed, so prefer a dedicated deployment signer and review/revoke its roles after onboarding.
+
+Morpho publishes a Blue deployment on Ethereum and Tempo, but its current official address list does not list
+Monad. Verify each network's token, Morpho, IRM, LLTV, explorer, and RPC values against primary sources before
+broadcasting. If self-deploying Morpho on another network, the Morpho instance and its owner are then your
+responsibility; this is not equivalent to using an official deployment.
 
 ---
 
