@@ -280,6 +280,10 @@ contract CreditRouter is ICreditRouter, TensileAccessControlled, ReentrancyGuard
         uint256 tokenId = IMarketRegistry(address(registry)).tokenIdOfWrapper(params.collateralToken);
         uint256 principalOutstanding = vault.suppliedForMarket(tokenId);
 
+        // @note decide if all debt will be repaid
+        bool withdrawAll = shares == morpho.borrowShares(id, address(this));
+
+
         // 1. repay Morpho by shares, with the payer funding this contract directly.
         //    Repaying BEFORE withdrawing the vault's supply makes the two sides net to zero in share terms,
         //    so withdrawFor sees a clean, fully-accrued balance to pull in step 2.
@@ -290,9 +294,11 @@ contract CreditRouter is ICreditRouter, TensileAccessControlled, ReentrancyGuard
         // Any over-pull (shouldn't happen; defensive) is returned to the payer.
         if (owed > repaid) loanToken.safeTransfer(payer, owed - repaid);
 
-        // 2. withdraw EVERYTHING the vault supplied to this market (principal + its accrued interest) into the
-        //    vault. withdrawFor withdraws by shares when assets == max, so no rounding mismatch.
-        uint256 withdrawn = vault.withdrawFor(tokenId, type(uint256).max);
+        // 2. Withdraw the full market supply only when this call repaid all router debt.
+        //    A partial repayment withdraws only the assets repaid.
+        uint256 withdrawn = withdrawAll
+            ? vault.withdrawFor(tokenId, type(uint256).max)
+            : vault.withdrawFor(tokenId, repaid);
 
         // 3. tell the vault how to split what came back: at most principalOutstanding is principal,
         //    the rest (interest on the supply side) is lender interest. These should be close to `repaid`
