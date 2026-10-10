@@ -146,6 +146,28 @@ contract Deploy is TensileDeployer {
         string memory path = string.concat("deployments/", vm.toString(block.chainid), ".json");
         vm.writeJson(json, path);
         console.log("Addresses written to", path);
+
+        // Keep the broadcast output self-contained so operators can capture the
+        // complete deployment without having to open the JSON artifact.
+        console.log("Deployment addresses (chainId):", block.chainid);
+        console.log("Morpho:", morpho);
+        console.log("AdaptiveCurveIrm:", irm);
+        console.log("USDC:", usdc);
+        console.log("C01_TensileAccessManager:", address(accessManager));
+        console.log("C02_IdentityRegistry:", address(identity));
+        console.log("C03_WarehouseRegistry:", address(warehouses));
+        console.log("C05_AttestationRegistry:", address(attestations));
+        console.log("C06_MaterialPassport:", address(passport));
+        console.log("C07_MintingController:", address(controller));
+        console.log("C08_RedemptionManager:", address(redemption));
+        console.log("C10_ReserveGuard:", address(guard));
+        console.log("C11_PriceOracleAdapter:", address(adapter));
+        console.log("C12_MarketRegistry:", address(registry));
+        console.log("C15_CreditRouter:", address(router));
+        console.log("C16_Marketplace:", address(marketplace));
+        console.log("C18_FeeCollector:", address(fees));
+        console.log("C19_PriceIndex:", address(index));
+        console.log("C14b_TensileCreditVault:", address(vault));
     }
 
     function _isDevOrTestChain(uint256 chainId) private pure returns (bool) {

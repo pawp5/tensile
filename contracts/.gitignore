@@ -9,4 +9,5 @@ broadcast/
 !**/.env.*.example
 !**/*.env.example
 !**/*.env.*.example
-deployments/31337.json
+deployments/
+
