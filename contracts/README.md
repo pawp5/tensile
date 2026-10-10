@@ -85,7 +85,8 @@ ALL FLOWS PASSED
 ```bash
 cp .env.example .env     # fill PRIVATE_KEY, EXPECTED_CHAIN_ID, and chain-specific addresses
 
-# Monad testnet (example): explicitly opt in to test assets and a self-deployed Morpho
+# Monad testnet (chain ID 10143): set EXPECTED_CHAIN_ID=10143 above and explicitly opt in to test assets
+# and a self-deployed Morpho. MockUSDC is blocked outside the script's allow-listed dev/test chain IDs.
 DEPLOY_MOCK_USDC=true DEPLOY_LOCAL_MORPHO=true forge script script/Deploy.s.sol --rpc-url monad_testnet --broadcast
 # writes deployments/<chainId>.json
 
@@ -98,12 +99,28 @@ from the token contract; `USDC_DECIMALS` can be set as an extra assertion. The d
 production stablecoin, checks that Morpho and the IRM have code, and checks that the IRM and LLTV are enabled.
 Configure `STABLE_FEED` and `STABLE_FLOOR` where a suitable stablecoin/USD feed exists. Never enable the mock
 token on production. Onboarding requires the deployment signer's admin rights; it grants that signer RISK_ADMIN
-if needed, so prefer a dedicated deployment signer and review/revoke its roles after onboarding.
+if needed, so prefer a dedicated deployment signer and review/revoke its roles after onboarding. When `ADMIN`
+is a Safe, the deployer intentionally keeps `ADMIN` until you complete the post-onboarding handover; revoke it
+through the AccessManager once setup is verified.
+
+Network aliases are `ethereum`, `monad`, `monad_testnet`, `tempo`, and `tempo_testnet`; set the matching RPC
+variable and expected chain ID (Ethereum 1, Monad mainnet 143, Monad testnet 10143, Tempo mainnet 4217, Moderato
+testnet 42431). Tempo transactions that pay gas in a TIP-20 need a Tempo-enabled Foundry build and its
+`--tempo.fee-token <TIP-20-address>` option; the standard Foundry binary in our CI image does not expose that
+option. Install the Tempo Foundry distribution for Tempo broadcasts. A self-deployed Morpho can be explicitly
+selected on any chain, but doing so creates an isolated Morpho instance and requires independent review and
+liquidity bootstrapping.
+
+If using a Tempo TIP-20 loan token, configure its TIP-403 policy to allow the required user and protocol
+transfers (including the router, vault, Morpho, marketplace, and fee recipient), and exercise the complete
+deposit/borrow/repay/settlement flow on Moderato first. TIP-20 policy decisions are token-issuer configuration;
+the Tensile deploy scripts cannot grant that authorization.
 
 Morpho publishes a Blue deployment on Ethereum and Tempo, but its current official address list does not list
 Monad. Verify each network's token, Morpho, IRM, LLTV, explorer, and RPC values against primary sources before
-broadcasting. If self-deploying Morpho on another network, the Morpho instance and its owner are then your
-responsibility; this is not equivalent to using an official deployment.
+broadcasting. The deploy script checks code and enabled Morpho parameters but cannot prove an address is the
+official deployment. If self-deploying Morpho elsewhere, the Morpho instance and its owner are your responsibility;
+this is not equivalent to using an official deployment.
 
 ---
 
