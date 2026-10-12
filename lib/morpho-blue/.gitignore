@@ -1,0 +1,9 @@
+# Compiler files
+cache/
+out/
+
+# Docs
+docs/
+
+# Certora
+.certora_internal/
